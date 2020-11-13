@@ -10,11 +10,14 @@ pool:
 stages:
 - stage: Provision
   displayName: 'Provision Azure Kubernetes Service'
-  variables:
-    resouregroupname: hashidemo-platform-rg
-    prefix: hashidemo 
   jobs:
-  - job: 'ProvisionAKS'    
+  - job: 'ProvisionAKS'
+    variables:
+    - group: aksplatform
+    - name: resouregroupname
+      value : hashidemo-platform-rg
+    - name: prefix
+      value: hashidemo
     steps:
     - script: |
         # Exit when any command returns a failure status.
