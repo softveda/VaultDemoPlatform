@@ -64,5 +64,9 @@ stages:
         ARM_TENANT_ID: $(ARM_TENANT_ID)
         ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
-    - script: echo $(RunTerraform.aksfqdn) $(RunTerraform.acrloginserver)
-      displayName: 'Print Variables'
+    - script: |
+        echo $(RunTerraform.aksfqdn) $(RunTerraform.acrloginserver)
+        az aks list -g $(resourcegroupname) -o table
+        acrname=`echo $(RunTerraform.acrloginserver) | cut -d'.' -f 1`
+        az aks update -g $(resourcegroupname) -n $(prefix)-aks --attach-acr $acrname
+      displayName: 'Update AKS'
