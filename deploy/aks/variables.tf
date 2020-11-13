@@ -11,8 +11,8 @@ variable "location" {
   default     = "westus"
 }
 
-variable "resource_group_name" {
-  description = "The name of the rsource group"
+variable "resourcegroupname" {
+  description = "The name of the resource group"
 }
 
 # variable "aks_spn_password" {

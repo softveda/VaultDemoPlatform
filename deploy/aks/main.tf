@@ -26,7 +26,7 @@ locals {
 }
 
 data "azurerm_resource_group" "default" {
-  name     = "${var.prefix}-platform-rg"
+  name     = var.resourcegroupname
 }
 
 resource "azurerm_container_registry" "acr" {

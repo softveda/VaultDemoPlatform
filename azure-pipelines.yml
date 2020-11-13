@@ -35,7 +35,7 @@ stages:
 
         # Write terraform.tfvars.
         echo 'prefix = "hashidemo"' | tee terraform.tfvars
-        echo 'location = "'$(resouregroupname)'"' | tee -a terraform.tfvars
+        echo 'resouregroupname = "'$(resouregroupname)'"' | tee -a terraform.tfvars
 
         # Create Terraform execution plan
         echo "*********** Run Terraform Validate and Plan"
