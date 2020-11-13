@@ -14,7 +14,7 @@ stages:
   - job: 'ProvisionAKS'
     variables:
     - group: aksplatform
-    - name: resouregroupname
+    - name: resourcegroupname
       value : hashidemo-platform-rg
     - name: prefix
       value: hashidemo
@@ -35,7 +35,7 @@ stages:
 
         # Write terraform.tfvars.
         echo 'prefix = "hashidemo"' | tee terraform.tfvars
-        echo 'resouregroupname = "'$(resouregroupname)'"' | tee -a terraform.tfvars
+        echo 'resourcegroupname = "'$(resourcegroupname)'"' | tee -a terraform.tfvars
 
         # Create Terraform execution plan
         echo "*********** Run Terraform Validate and Plan"
