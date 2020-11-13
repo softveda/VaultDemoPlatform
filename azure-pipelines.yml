@@ -64,9 +64,17 @@ stages:
         ARM_TENANT_ID: $(ARM_TENANT_ID)
         ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
-    - script: |
-        echo $(RunTerraform.aksfqdn) $(RunTerraform.acrloginserver)
-        az aks list -g $(resourcegroupname) -o table
-        acrname=`echo $(RunTerraform.acrloginserver) | cut -d'.' -f 1`
-        az aks update -g $(resourcegroupname) -n $(prefix)-aks --attach-acr $acrname
-      displayName: 'Update AKS'
+    - task: AzureCLI@2
+      displayName: Azure CLI
+      inputs:
+        azureSubscription: azure-terraform-spn
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az --version
+          az account show
+          echo $(RunTerraform.aksfqdn) $(RunTerraform.acrloginserver)
+          az aks list -g $(resourcegroupname) -o table
+          acrname=`echo $(RunTerraform.acrloginserver) | cut -d'.' -f 1`
+          az aks update -g $(resourcegroupname) -n $(prefix)-aks --attach-acr $acrname
+
