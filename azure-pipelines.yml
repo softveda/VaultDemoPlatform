@@ -1,9 +1,65 @@
 trigger:
-- master
-
+  - main
+  
+variables:
+  buildConfiguration: 'Release'
+  
 pool:
   vmImage: 'ubuntu-latest'
+  
+stages:
+- stage: Provision
+  displayName: 'Provision Azure Kubernetes Service'
+  variables:
+    resouregroupname: hashidemo-platform-rg
+    prefix: hashidemo 
+  jobs:
+  - job: 'ProvisionAKS'    
+    steps:
+    - script: |
+        # Exit when any command returns a failure status.
+        set -e
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+        # Write backend.tfvars.
+        echo 'resource_group_name = "'$(TfStorageAccountResourceGroupName)'"' | tee backend.tfvars
+        echo 'storage_account_name = "'$(TfStorageAccountName)'"' | tee -a backend.tfvars
+        echo 'container_name = "'$(TfStateContainerName)'"' | tee -a backend.tfvars
+        echo 'key = "terraform.tfstate"' | tee -a backend.tfvars
+      
+        # Initialize Terraform.
+        echo "*********** Run Terraform Init"
+        terraform init -input=false -backend-config="backend.tfvars" -no-color
+
+        # Write terraform.tfvars.
+        echo 'prefix = "hashidemo"' | tee terraform.tfvars
+        echo 'location = "'$(resouregroupname)'"' | tee -a terraform.tfvars
+
+        # Create Terraform execution plan
+        echo "*********** Run Terraform Validate and Plan"
+        terraform validate
+        terraform plan -input=false -out=tfplan -no-color
+
+        # Apply the Terraform plan.
+        echo "*********** Run Terraform Apply"
+        terraform apply -input=false -auto-approve -no-color tfplan
+
+        # Get the App Service name.
+        acrloginserver=$(terraform output acr_login_server)
+        aksfqdn=$(terraform output aks_fqdn)
+
+        # Write the variables to the pipeline.
+        echo "##vso[task.setvariable variable=acrloginserver;isOutput=true]$acrloginserver"
+        echo "##vso[task.setvariable variable=aksfqdn;isOutput=true]$aksfqdn"
+
+        rm -f *.tfvars
+      name: 'RunTerraform'
+      displayName: 'Run Terraform'
+      workingDirectory: $(Build.SourcesDirectory)/deploy/aks
+      env:
+        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+        ARM_TENANT_ID: $(ARM_TENANT_ID)
+        ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+
+    - script: echo $(RunTerraform.aksfqdn) $(RunTerraform.acrloginserver)
+      displayName: 'Print Variables'
